@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: tasks
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  api-gateway:
+    build: ./apps/api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - tasks-service
+      - notifications-service
+
+  auth-service:
+    build: ./apps/auth-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+
+  tasks-service:
+    build: ./apps/tasks-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  notifications-service:
+    build: ./apps/notifications-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - rabbitmq
+
+volumes:
+  pgdata:
