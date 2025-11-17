@@ -18,10 +18,10 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'userteste',
-    description: 'Nome de usuário para a conta',
+    description: 'Digite seu nome de usuário',
   })
-  @IsString({ message: 'Nome de usuário deve ser uma string' })
-  @IsNotEmpty({ message: 'Nome de usuário é obrigatório' })
+  @IsString({ message: 'O nome do usuário deve ser uma string' })
+  @IsNotEmpty({ message: 'O nome do usuário é obrigatório' })
 
   username: string;
 
