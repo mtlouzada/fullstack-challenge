@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../users/user.service';
+import { UserService } from '../entities/user.service';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -25,9 +25,11 @@ export class AuthService {
     return this.issueTokens(user.id);
   }
 
-  async issueTokens(userId: string) {
+  async issueTokens(userId: string | number) {
+    const sub = String(userId);
+
     const accessToken = await this.jwt.signAsync(
-      { sub: userId },
+      { sub },
       {
         secret: process.env.JWT_ACCESS_SECRET,
         expiresIn: '15m',
@@ -35,7 +37,7 @@ export class AuthService {
     );
 
     const refreshToken = await this.jwt.signAsync(
-      { sub: userId },
+      { sub },
       {
         secret: process.env.JWT_REFRESH_SECRET,
         expiresIn: '7d',

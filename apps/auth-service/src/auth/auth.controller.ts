@@ -1,9 +1,9 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { RefreshDto } from './dto/refresh.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
+import { RefreshDto } from '../dto/refresh.dto';
 
 @Controller()
 export class AuthController {
@@ -20,7 +20,7 @@ export class AuthController {
   }
 
   @MessagePattern('auth.refresh')
-  refresh(@Payload() data: RefreshDto) {
+  refresh(@Payload() data: RefreshDto & { userId: string }) {
     return this.auth.refreshTokens(data.userId, data.refreshToken);
   }
 }
