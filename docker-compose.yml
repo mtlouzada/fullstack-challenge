@@ -21,7 +21,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-
+      
   auth-service:
     build:
       context: ./apps/auth-service
@@ -36,3 +36,16 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
+
+  api-gateway:
+    build:
+      context: ./apps/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - rabbitmq
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:5000
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
