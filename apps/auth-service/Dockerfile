@@ -6,6 +6,8 @@ FROM node:18-alpine AS builder
 # Pasta de trabalho
 WORKDIR /app
 
+ENV NODE_ENV=development
+
 # Copia package.json e package-lock.json
 COPY package*.json ./
 
@@ -32,7 +34,7 @@ COPY --from=builder /app/dist ./dist
 COPY package*.json ./
 
 # Define porta (caso use HTTP)
-EXPOSE 3000
+EXPOSE 3001
 
 # Comando padrão
 CMD ["node", "dist/main.js"]
