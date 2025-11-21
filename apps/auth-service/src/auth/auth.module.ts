@@ -9,7 +9,10 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
 @Module({
   imports: [
     UsersModule,
-    JwtModule.register({}),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '15m' },
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, RefreshStrategy],

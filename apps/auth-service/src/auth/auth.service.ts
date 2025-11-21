@@ -31,7 +31,7 @@ export class AuthService {
     const accessToken = await this.jwt.signAsync(
       { sub },
       {
-        secret: process.env.JWT_ACCESS_SECRET,
+        secret: process.env.JWT_SECRET,
         expiresIn: '15m',
       },
     );
