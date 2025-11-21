@@ -1,5 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { AmqpConnection } from "@golevelup/nestjs-rabbitmq";
+
+interface AmqpConnection {
+  publish(exchange: string, routingKey: string, message: any): void;
+}
 
 @Injectable()
 export class AuthProducer {
