@@ -1,4 +1,7 @@
+version: '3.9'
+
 services:
+
   postgres:
     image: postgres:15
     environment:
@@ -7,11 +10,15 @@ services:
       POSTGRES_DB: auth_db
     ports:
       - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -21,7 +28,14 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-      
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
   auth-service:
     build:
       context: ./apps/auth-service
@@ -30,12 +44,14 @@ services:
     env_file:
       - ./apps/auth-service/.env
     ports:
-      - "3001:3001"
+      - "3001:3001"  
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
+    networks:
+      - backend
 
   api-gateway:
     build:
@@ -43,9 +59,19 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    depends_on:
-      - auth-service
-      - rabbitmq
     environment:
-      AUTH_SERVICE_URL: http://auth-service:5000
+      AUTH_SERVICE_URL: http://auth-service:3001
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      auth-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
