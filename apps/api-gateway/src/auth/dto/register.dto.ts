@@ -3,6 +3,10 @@ import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty()
   @IsEmail()
   email: string;
 
@@ -10,8 +14,4 @@ export class RegisterDto {
   @IsString()
   @MinLength(6)
   password: string;
-
-  @ApiProperty()
-  @IsString()
-  name: string;
 }
