@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -23,5 +23,4 @@ export class AuthController {
   refresh(@Body() body: { refreshToken: string }) {
     return this.authService.refresh(body.refreshToken);
   }
-
 }
