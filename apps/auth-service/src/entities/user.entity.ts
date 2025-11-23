@@ -9,7 +9,10 @@ export class User {
   email: string;
 
   @Column()
-  password: string; // hashed
+  password: string;
+
+  @Column()
+  name: string;
 
   @Column({ nullable: true })
   currentHashedRefreshToken?: string;

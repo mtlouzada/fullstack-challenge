@@ -9,6 +9,7 @@ module.exports = class CreateUsersTable1699999999999 {
         "id" SERIAL NOT NULL,
         "email" character varying NOT NULL,
         "password" character varying NOT NULL,
+        "name" character varying NOT NULL,
         "currentHashedRefreshToken" character varying,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
