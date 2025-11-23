@@ -13,12 +13,13 @@ import { User } from './entities/user.entity';
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [User],
-      synchronize: true,
+      autoLoadEntities: true,
+      synchronize: false,
+      migrationsRun: false,
     }),
 
     UsersModule,
     AuthModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
