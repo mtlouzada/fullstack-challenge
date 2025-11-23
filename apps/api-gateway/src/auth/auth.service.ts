@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom, timeout, catchError } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -25,5 +25,4 @@ export class AuthService {
   refresh(refreshToken: string) {
     return this.send('auth.refresh', { refreshToken });
   }
-
 }

@@ -9,14 +9,15 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async register(data: { email: string; password: string }) {
+  async register(data: { name: string; email: string; password: string }) {
     const existing = await this.users.findByEmail(data.email);
     if (existing) throw new UnauthorizedException('Email already used');
 
-    const user = await this.users.create(data.email, data.password);
+    const user = await this.users.create(data.name, data.email, data.password);
 
     return this.issueTokens(user.id);
-  }
+}
+
 
   async login(email: string, password: string) {
     const user = await this.users.validateUser(email, password);
