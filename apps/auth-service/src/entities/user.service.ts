@@ -14,11 +14,11 @@ export class UserService {
     return this.usersRepo.findOne({ where: { email } });
   }
 
-  async create(email: string, password: string) {
-    const hashed = await bcrypt.hash(password, 10);
-    const user = this.usersRepo.create({ email, password: hashed });
-    return this.usersRepo.save(user);
-  }
+ async create(name: string, email: string, password: string) {
+   const user = this.usersRepo.create({ name, email, password });
+   return await this.usersRepo.save(user);
+}
+
 
   async validateUser(email: string, password: string) {
     const user = await this.findByEmail(email);
