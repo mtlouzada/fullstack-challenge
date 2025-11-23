@@ -7,7 +7,7 @@ export class AuthService {
   constructor(
     private users: UserService,
     private jwt: JwtService,
-  ) {}
+  ) { }
 
   async register(data: { name: string; email: string; password: string }) {
     const existing = await this.users.findByEmail(data.email);
@@ -16,8 +16,7 @@ export class AuthService {
     const user = await this.users.create(data.name, data.email, data.password);
 
     return this.issueTokens(user.id);
-}
-
+  }
 
   async login(email: string, password: string) {
     const user = await this.users.validateUser(email, password);
@@ -51,15 +50,17 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(userId: string, refreshToken: string) {
+  async refreshTokens(refreshToken: string) {
     try {
-      this.jwt.verify(refreshToken, {
+      const payload: any = this.jwt.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
-      return this.issueTokens(userId);
+      return this.issueTokens(payload.sub);
+
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
+
 }

@@ -8,23 +8,31 @@ import * as bcrypt from 'bcryptjs';
 export class UserService {
   constructor(
     @InjectRepository(User) private usersRepo: Repository<User>,
-  ) {}
+  ) { }
 
   async findByEmail(email: string) {
     return this.usersRepo.findOne({ where: { email } });
   }
 
- async create(name: string, email: string, password: string) {
-   const user = this.usersRepo.create({ name, email, password });
-   return await this.usersRepo.save(user);
-}
+  async findByEmailWithPassword(email: string) {
+    return this.usersRepo.findOne({
+      where: { email },
+      select: ['id', 'email', 'name', 'password'],
+    });
+  }
 
+  async create(name: string, email: string, password: string) {
+    const hashed = await bcrypt.hash(password, 10);
+    const user = this.usersRepo.create({ name, email, password: hashed });
+    return await this.usersRepo.save(user);
+  }
 
   async validateUser(email: string, password: string) {
-    const user = await this.findByEmail(email);
+    const user = await this.findByEmailWithPassword(email);
     if (!user) return null;
 
     const match = await bcrypt.compare(password, user.password);
     return match ? user : null;
   }
+
 }
