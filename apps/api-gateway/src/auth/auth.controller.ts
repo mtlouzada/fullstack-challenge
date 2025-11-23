@@ -7,7 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   login(@Body() body: LoginDto) {
@@ -15,9 +15,10 @@ export class AuthController {
   }
 
   @Post('register')
-  register(@Body() body: RegisterDto) {
-    return this.authService.register(body);
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
+
 
   @Post('refresh')
   refresh(@Body() body: { refreshToken: string }) {
