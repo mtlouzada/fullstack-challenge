@@ -8,18 +8,15 @@ export class AuthService {
   ) {}
 
   login(data: any) {
-    return this.authClient.send('auth_login', data);
+    return this.authClient.send('auth.login', data);
   }
 
   register(data: any) {
-    return this.authClient.send('auth_register', data);
+    return this.authClient.send('auth.register', data);
   }
 
   refresh(refreshToken: string) {
-    return this.authClient.send('auth_refresh', { refreshToken });
+    return this.authClient.send('auth.refresh', { refreshToken });
   }
 
-  me(accessToken: string) {
-    return this.authClient.send('auth_me', { accessToken });
-  }
 }

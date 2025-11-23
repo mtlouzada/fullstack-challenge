@@ -24,10 +24,4 @@ export class AuthController {
     return this.authService.refresh(body.refreshToken);
   }
 
-  @ApiBearerAuth()
-  @Get('me')
-  me(@Headers('authorization') authHeader: string) {
-    const token = authHeader?.replace('Bearer ', '');
-    return this.authService.me(token);
-  }
 }
