@@ -3,25 +3,27 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  login(@Body() body: LoginDto) {
-    return this.authService.login(body);
-  }
+@Post('login')
+login(@Body() body: LoginDto) {
+return this.authService.login(body);
+}
 
-  @Post('register')
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
-  }
+@Post('register')
+async register(@Body() dto: RegisterDto) {
+return this.authService.register(dto);
+}
 
+@Post('refresh')
+async refresh(@Body() body: RefreshTokenDto) {
+  return this.authService.refresh(body.refreshToken);
+}
+    
 
-  @Post('refresh')
-  refresh(@Body() body: { refreshToken: string }) {
-    return this.authService.refresh(body.refreshToken);
-  }
 }
