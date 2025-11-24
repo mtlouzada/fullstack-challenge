@@ -53,6 +53,22 @@ services:
     networks:
       - backend
 
+
+  tasks-service:
+    build:
+      context: ./apps/tasks-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./apps/tasks-service/.env
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - backend
+
+
   api-gateway:
     build:
       context: ./apps/api-gateway
