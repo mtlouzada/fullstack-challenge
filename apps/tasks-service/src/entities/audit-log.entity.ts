@@ -4,22 +4,22 @@ import { Task } from './task.entity';
 @Entity('task_audit_logs')
 export class AuditLog {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id?: number;                // opcional
 
   @Column()
   taskId: number;
 
-  @Column()
-  userId: number;
+  @Column({ nullable: true })
+  userId?: number | null;     // nullable
 
   @Column({ type: 'text' })
   action: string; // e.g. 'update', 'assign', 'comment'
 
   @Column({ type: 'text', nullable: true })
-  diff: string; // short description
+  diff?: string; // short description
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt?: Date;          // opcional
 
   @ManyToOne(() => Task, (t) => t.auditLogs, { onDelete: 'CASCADE' })
   task: Task;
