@@ -18,6 +18,10 @@ export class AuthController {
 
   @MessagePattern('auth.refresh')
   refresh(data: { refreshToken: string }) {
+    if (!data || !data.refreshToken) {
+      throw new Error('Invalid refresh payload');
+    }
+
     return this.authService.refreshTokens(data.refreshToken);
   }
 }

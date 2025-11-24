@@ -21,9 +21,8 @@ return this.authService.register(dto);
 }
 
 @Post('refresh')
-async refresh(@Body() body: RefreshTokenDto) {
-  return this.authService.refresh(body.refreshToken);
-}
-    
+async refresh(@Body() dto: RefreshTokenDto) {
+  return this.authService.refresh(dto.refreshToken);
+}    
 
 }
