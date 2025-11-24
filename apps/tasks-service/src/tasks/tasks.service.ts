@@ -5,9 +5,9 @@ import { Task, Priority, Status } from '../entities/task.entity';
 import { TaskUser } from '../entities/task-user.entity';
 import { Comment } from '../entities/comment.entity';
 import { AuditLog } from '../entities/audit-log.entity';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { CreateCommentDto } from './dto/create-comment.dto';
+import { CreateTaskDto } from '../dto/create-task.dto';
+import { UpdateTaskDto } from '../dto/update-task.dto';
+import { CreateCommentDto } from '../dto/create-comment.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
 

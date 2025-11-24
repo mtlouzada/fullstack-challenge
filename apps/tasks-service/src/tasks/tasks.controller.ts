@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { PaginationDto } from './dto/pagination.dto';
+import { CreateTaskDto } from '../dto/create-task.dto';
+import { UpdateTaskDto } from '../dto/update-task.dto';
+import { CreateCommentDto } from '../dto/create-comment.dto';
+import { PaginationDto } from '../dto/pagination.dto';
 
 @Controller('tasks')
 export class TasksController {
