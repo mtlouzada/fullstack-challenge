@@ -1,12 +1,37 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
 
-declare const process: { env: { [key: string]: string | undefined } };
+import { AuthModule } from './auth/auth.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
-    AuthModule,
+    ConfigModule.forRoot({ isGlobal: true }),
 
+    ClientsModule.register([
+      {
+        name: 'AUTH_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://rabbitmq:5672'],
+          queue: 'auth_queue',
+          queueOptions: { durable: true },
+        },
+      },
+      {
+        name: 'TASKS_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://rabbitmq:5672'],
+          queue: 'tasks_queue',
+          queueOptions: { durable: true },
+        },
+      },
+    ]),
+
+    AuthModule,
+    TasksModule,
   ],
 })
 export class AppModule {}
