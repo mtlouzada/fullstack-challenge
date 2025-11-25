@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
-import { AuthModule } from '../auth/auth.module';
+import { RmqModule } from '../RMQ/rmq.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [RmqModule],
   controllers: [TasksController],
   providers: [TasksService],
-  exports: [TasksService],
 })
 export class TasksModule {}
