@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { JwtAuthGuard } from '../auth/dto/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guards';
 
 @Controller('tasks')
 export class TasksController {

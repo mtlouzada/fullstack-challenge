@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateTaskDto } from './dtos/create-task.dto';
-import { UpdateTaskDto } from './dtos/update-task.dto';
-import { AddCommentDto } from './dtos/add-comment.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import { AddCommentDto } from './dto/add-comment.dto';
 
 @Injectable()
 export class TasksService {
