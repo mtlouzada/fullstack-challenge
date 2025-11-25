@@ -9,12 +9,13 @@ import { TasksModule } from './tasks/tasks.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
 
+    // registra os clients RMQ aqui (apenas no AppModule)
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://rabbitmq:5672'],
+          urls: [process.env.RABBITMQ_URL || 'amqp://guest:guest@rabbitmq:5672'],
           queue: 'auth_queue',
           queueOptions: { durable: true },
         },
@@ -23,13 +24,14 @@ import { TasksModule } from './tasks/tasks.module';
         name: 'TASKS_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://rabbitmq:5672'],
+          urls: [process.env.RABBITMQ_URL || 'amqp://guest:guest@rabbitmq:5672'],
           queue: 'tasks_queue',
           queueOptions: { durable: true },
         },
       },
     ]),
 
+    // módulos de feature (sem ClientsModule.register nelas)
     AuthModule,
     TasksModule,
   ],
