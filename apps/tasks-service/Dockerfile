@@ -10,7 +10,6 @@ WORKDIR /usr/src/app
 RUN apk add --no-cache postgresql-client bash
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENV NODE_ENV=production
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "dist/main.js"]
