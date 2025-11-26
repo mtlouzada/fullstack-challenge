@@ -1,5 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, InternalServerErrorException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom, timeout } from 'rxjs';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AddCommentDto } from './dto/add-comment.dto';
@@ -7,41 +8,44 @@ import { AddCommentDto } from './dto/add-comment.dto';
 @Injectable()
 export class TasksService {
   constructor(
-    @Inject('TASKS_SERVICE')
-    private readonly tasksClient: ClientProxy,
+    @Inject('TASKS_SERVICE') private readonly tasksClient: ClientProxy,
   ) {}
 
-  findAll(page: number, size: number) {
-    return this.tasksClient.send('tasks.findAll', { page, size });
+  private async send<T = any, R = any>(pattern: string, data: T) {
+    try {
+      const obs = this.tasksClient.send<R, T>(pattern, data);
+      return await firstValueFrom(obs.pipe(timeout({ each: 8000 })));
+    } catch (err) {
+      console.error('[TasksService] RMQ error', err);
+      throw new InternalServerErrorException('Tasks microservice error');
+    }
   }
 
-  create(dto: CreateTaskDto) {
-    return this.tasksClient.send('tasks.create', dto);
+  findAll(page: number, size: number) {
+    return this.send('tasks.findAll', { page, size });
+  }
+
+  create(dto: CreateTaskDto & { createdBy?: number }) {
+    return this.send('tasks.create', dto);
   }
 
   findOne(id: number) {
-    return this.tasksClient.send('tasks.findOne', { id });
+    return this.send('tasks.findOne', { id });
   }
 
-  update(id: number, dto: UpdateTaskDto) {
-    return this.tasksClient.send('tasks.update', { id, dto });
+  update(id: number, dto: UpdateTaskDto & { updatedBy?: number }) {
+    return this.send('tasks.update', { id, dto });
   }
 
   remove(id: number) {
-    return this.tasksClient.send('tasks.remove', { id });
+    return this.send('tasks.remove', { id });
   }
 
-  // Comments -----------------------------------------
-
-  addComment(taskId: number, dto: AddCommentDto) {
-    return this.tasksClient.send('tasks.addComment', { taskId, dto });
+  addComment(taskId: number, dto: AddCommentDto & { authorId?: number }) {
+    return this.send('tasks.addComment', { taskId, dto });
   }
 
   listComments(taskId: number, page: number, size: number) {
-    return this.tasksClient.send('tasks.listComments', {
-      taskId,
-      page,
-      size,
-    });
+    return this.send('tasks.listComments', { taskId, page, size });
   }
 }

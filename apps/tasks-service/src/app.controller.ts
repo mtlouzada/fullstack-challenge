@@ -1,12 +1,44 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { TasksService } from './tasks/tasks.service';
 
 @Controller()
-export class AppController {
-  constructor(private readonly appService: AppService) {}
+export class RpcTasksController {
+  constructor(private readonly tasksService: TasksService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @MessagePattern('tasks.findAll')
+  findAll(@Payload() data: { page: number; size: number }) {
+    return this.tasksService.findAll({ page: data.page, size: data.size });
+  }
+
+  @MessagePattern('tasks.create')
+  create(@Payload() data: any) {
+    // data: CreateTaskDto + createdBy
+    return this.tasksService.create(data);
+  }
+
+  @MessagePattern('tasks.findOne')
+  findOne(@Payload() data: { id: number }) {
+    return this.tasksService.findOne(data.id);
+  }
+
+  @MessagePattern('tasks.update')
+  update(@Payload() data: { id: number; dto: any }) {
+    return this.tasksService.update(data.id, data.dto);
+  }
+
+  @MessagePattern('tasks.remove')
+  remove(@Payload() data: { id: number }) {
+    return this.tasksService.remove(data.id);
+  }
+
+  @MessagePattern('tasks.addComment')
+  addComment(@Payload() data: { taskId: number; dto: any }) {
+    return this.tasksService.addComment(data.taskId, data.dto);
+  }
+
+  @MessagePattern('tasks.listComments')
+  listComments(@Payload() data: { taskId: number; page: number; size: number }) {
+    return this.tasksService.listComments(data.taskId, { page: data.page, size: data.size });
   }
 }

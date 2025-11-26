@@ -9,81 +9,66 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { JwtAuthGuard } from '../auth/jwt-auth.guards';
+import { TasksService } from './tasks.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { AddCommentDto } from './dto/add-comment.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(
-    @Inject('TASKS_SERVICE')
-    private readonly tasksClient: ClientProxy,
-  ) {}
+  constructor(private readonly tasksService: TasksService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll(
-    @Query('page') page = 1,
-    @Query('size') size = 10,
-  ) {
-    return this.tasksClient.send('tasks.findAll', {
-      page: Number(page),
-      size: Number(size),
-    });
+  findAll(@Query() q: PaginationDto) {
+    const page = Number(q.page || 1);
+    const size = Number(q.size || 10);
+    return this.tasksService.findAll(page, size);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() dto: any) {
-    return this.tasksClient.send('tasks.create', dto);
+  create(@Request() req, @Body() dto: CreateTaskDto) {
+    // request.user should be populated by JwtAuthGuard (payload.sub or id)
+    const createdBy = req.user?.sub ?? req.user?.id ?? null;
+    return this.tasksService.create({ ...dto, createdBy });
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: number) {
-    return this.tasksClient.send('tasks.findOne', { id: Number(id) });
+  findOne(@Param('id') id: string) {
+    return this.tasksService.findOne(Number(id));
   }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(
-    @Param('id') id: number,
-    @Body() dto: any,
-  ) {
-    return this.tasksClient.send('tasks.update', { id: Number(id), dto });
+  update(@Request() req, @Param('id') id: string, @Body() dto: UpdateTaskDto) {
+    const updatedBy = req.user?.sub ?? req.user?.id ?? null;
+    return this.tasksService.update(Number(id), { ...dto, updatedBy });
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    return this.tasksClient.send('tasks.remove', { id: Number(id) });
+  remove(@Param('id') id: string) {
+    return this.tasksService.remove(Number(id));
   }
-
-  // Comments -------------------------------------------------
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
-  async addComment(
-    @Param('id') id: number,
-    @Body() dto: any,
-  ) {
-    return this.tasksClient.send('tasks.addComment', {
-      taskId: Number(id),
-      dto,
-    });
+  addComment(@Request() req, @Param('id') id: string, @Body() dto: AddCommentDto) {
+    const authorId = req.user?.sub ?? req.user?.id ?? null;
+    return this.tasksService.addComment(Number(id), { ...dto, authorId });
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/comments')
-  async listComments(
-    @Param('id') id: number,
-    @Query('page') page = 1,
-    @Query('size') size = 10,
-  ) {
-    return this.tasksClient.send('tasks.listComments', {
-      taskId: Number(id),
-      page: Number(page),
-      size: Number(size),
-    });
+  listComments(@Param('id') id: string, @Query() q: PaginationDto) {
+    const page = Number(q.page || 1);
+    const size = Number(q.size || 10);
+    return this.tasksService.listComments(Number(id), page, size);
   }
 }
