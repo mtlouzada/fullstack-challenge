@@ -4,16 +4,17 @@ services:
 
   postgres:
     image: postgres:15
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: auth_db
+      POSTGRES_DB: app_db
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,6 +23,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -44,7 +46,7 @@ services:
     env_file:
       - ./apps/auth-service/.env
     ports:
-      - "3001:3001"  
+      - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,26 +55,28 @@ services:
     networks:
       - backend
 
-
   tasks-service:
     build:
       context: ./apps/tasks-service
       dockerfile: Dockerfile
+    container_name: tasks-service
     env_file:
       - ./apps/tasks-service/.env
     ports:
       - "3002:3002"
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - backend
-
 
   api-gateway:
     build:
       context: ./apps/api-gateway
       dockerfile: Dockerfile
+    container_name: api-gateway
     ports:
       - "3000:3000"
     environment:
