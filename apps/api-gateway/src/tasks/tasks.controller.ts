@@ -16,7 +16,7 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { AddCommentDto } from './dto/add-comment.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Controller('tasks')
 export class TasksController {

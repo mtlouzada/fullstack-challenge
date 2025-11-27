@@ -25,9 +25,9 @@ export class TasksService {
     private readonly notificationsClient: ClientProxy,
   ) {}
 
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   // LIST WITH PAGINATION
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   async findAll({ page, size }: { page: number; size: number }) {
     const [items, total] = await this.tasksRepo.findAndCount({
       skip: (page - 1) * size,
@@ -39,16 +39,11 @@ export class TasksService {
     return { items, total, page, size };
   }
 
-  // ----------------------------------------------------
-  // CREATE TASK
-  // ----------------------------------------------------
+  //---------------------------------------------------------
+  // CREATE TASK (100% corrigido para docker/typeorm)
+  //---------------------------------------------------------
   async create(dto: CreateTaskDto): Promise<Task> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // Cast explícito para evitar overload errado
+    return await this.dataSource.transaction(async (manager) => {
       const draft: DeepPartial<Task> = {
         title: dto.title,
         description: dto.description,
@@ -57,54 +52,44 @@ export class TasksService {
         status: dto.status ?? Status.TODO,
       };
 
-      const taskEntity = queryRunner.manager.create(Task, draft);
-
-      const saved = await queryRunner.manager.save(Task, taskEntity);
+      const task = manager.create(Task, draft);
+      const saved = await manager.save(Task, task);
 
       // Assign users
       if (dto.assignedUserIds?.length) {
-        const relationDrafts: DeepPartial<TaskUser>[] = dto.assignedUserIds.map(
-          (uid) => ({
+        const relations = dto.assignedUserIds.map((uid) =>
+          manager.create(TaskUser, {
             taskId: saved.id,
             userId: uid,
           }),
         );
 
-        const relations = queryRunner.manager.create(TaskUser, relationDrafts);
-        await queryRunner.manager.save(TaskUser, relations);
+        await manager.save(TaskUser, relations);
       }
 
-      // Audit creation
-      const auditDraft: DeepPartial<AuditLog> = {
+      // Audit
+      const audit = manager.create(AuditLog, {
         taskId: saved.id,
-        userId: null,
         action: 'create',
+        userId: null,
         diff: `created task ${saved.title}`,
-      };
+      });
 
-      const audit = queryRunner.manager.create(AuditLog, auditDraft);
-      await queryRunner.manager.save(audit);
+      await manager.save(AuditLog, audit);
 
-      await queryRunner.commitTransaction();
-
-      // Publish event
+      // Emit only after commit (Nest garante)
       this.notificationsClient.emit('task.created', {
         taskId: saved.id,
         task: saved,
       });
 
       return saved;
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   // FIND ONE
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   async findOne(id: number): Promise<Task> {
     const task = await this.tasksRepo.findOne({
       where: { id },
@@ -115,9 +100,9 @@ export class TasksService {
     return task;
   }
 
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   // UPDATE TASK
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   async update(id: number, dto: UpdateTaskDto): Promise<Task> {
     const task = await this.findOne(id);
     const previous = { ...task };
@@ -142,9 +127,9 @@ export class TasksService {
     return saved;
   }
 
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   // DELETE TASK
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   async remove(id: number) {
     const task = await this.findOne(id);
     await this.tasksRepo.remove(task);
@@ -153,23 +138,21 @@ export class TasksService {
     return { deleted: true };
   }
 
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   // ADD COMMENT
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   async addComment(taskId: number, dto: CreateCommentDto): Promise<Comment> {
-    const draft: DeepPartial<Comment> = {
+    const comment = this.commentRepo.create({
       taskId,
       content: dto.content,
-      authorId: undefined,
-    };
+    });
 
-    const entity = this.commentRepo.create(draft);
-    const saved = await this.commentRepo.save(entity);
+    const saved = await this.commentRepo.save(comment);
 
     const audit = this.auditRepo.create({
       taskId,
-      userId: null,
       action: 'comment',
+      userId: null,
       diff: dto.content,
     });
 
@@ -183,9 +166,9 @@ export class TasksService {
     return saved;
   }
 
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   // LIST COMMENTS
-  // ----------------------------------------------------
+  //---------------------------------------------------------
   async listComments(
     taskId: number,
     { page, size }: { page: number; size: number },
