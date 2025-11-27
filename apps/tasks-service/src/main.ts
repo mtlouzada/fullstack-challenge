@@ -10,7 +10,7 @@ async function bootstrap() {
       options: {
         urls: [process.env.RABBITMQ_URL ?? 'amqp://guest:guest@rabbitmq:5672'],
         queue: 'tasks_queue',
-        queueOptions: { durable: false },
+        queueOptions: { durable: true },
       },
     },
   );

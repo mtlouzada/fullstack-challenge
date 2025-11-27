@@ -5,6 +5,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: '*', // ou coloque seu front-end específico
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Fullstack Challenge - API Gateway')
     .setDescription('Swagger documentando os endpoints que chamam os microservices')
@@ -19,3 +25,4 @@ async function bootstrap() {
   console.log('Gateway running at http://localhost:3000/api/docs');
 }
 bootstrap();
+
