@@ -1,50 +1,44 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto } from '../dto/create-task.dto';
-import { UpdateTaskDto } from '../dto/update-task.dto';
-import { CreateCommentDto } from '../dto/create-comment.dto';
-import { PaginationDto } from '../dto/pagination.dto';
 
-@Controller('tasks')
-export class TasksController {
+@Controller()
+export class RpcTasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Get()
-  findAll(@Query() q: PaginationDto) {
-    const page = Number(q.page || 1);
-    const size = Number(q.size || 10);
-    return this.tasksService.findAll({ page, size });
+  @MessagePattern('tasks.findAll')
+  findAll(@Payload() data: { page: number; size: number }) {
+    return this.tasksService.findAll({ page: data.page, size: data.size });
   }
 
-  @Post()
-  create(@Body() dto: CreateTaskDto) {
-    return this.tasksService.create(dto);
+  @MessagePattern('tasks.create')
+  create(@Payload() data: any) {
+    // data: CreateTaskDto + createdBy
+    return this.tasksService.create(data);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
+  @MessagePattern('tasks.findOne')
+  findOne(@Payload() data: { id: number }) {
+    return this.tasksService.findOne(data.id);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
-    return this.tasksService.update(+id, dto);
+  @MessagePattern('tasks.update')
+  update(@Payload() data: { id: number; dto: any }) {
+    return this.tasksService.update(data.id, data.dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(+id);
+  @MessagePattern('tasks.remove')
+  remove(@Payload() data: { id: number }) {
+    return this.tasksService.remove(data.id);
   }
 
-  @Post(':id/comments')
-  addComment(@Param('id') id: string, @Body() dto: CreateCommentDto) {
-    return this.tasksService.addComment(+id, dto);
+  @MessagePattern('tasks.addComment')
+  addComment(@Payload() data: { taskId: number; dto: any }) {
+    return this.tasksService.addComment(data.taskId, data.dto);
   }
 
-  @Get(':id/comments')
-  getComments(@Param('id') id: string, @Query() q: PaginationDto) {
-    const page = Number(q.page || 1);
-    const size = Number(q.size || 10);
-    return this.tasksService.listComments(+id, { page, size });
+  @MessagePattern('tasks.listComments')
+  listComments(@Payload() data: { taskId: number; page: number; size: number }) {
+    return this.tasksService.listComments(data.taskId, { page: data.page, size: data.size });
   }
 }

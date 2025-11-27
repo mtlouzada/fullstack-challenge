@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import { TasksController } from './tasks.controller';
+import { RpcTasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 
 import { Task } from '../entities/task.entity';
@@ -26,7 +26,7 @@ import { AuditLog } from '../entities/audit-log.entity';
     ]),
   ],
 
-  controllers: [TasksController],
+  controllers: [RpcTasksController],
   providers: [TasksService],
   exports: [TasksService],
 })

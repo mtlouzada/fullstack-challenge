@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { TasksModule } from './tasks/tasks.module';
-import { RpcTasksController } from './tasks/tasks-rpc.controller';
+import { RpcTasksController } from './tasks/tasks.controller';
 
 import { typeOrmConfig } from './typeorm.config';
 
