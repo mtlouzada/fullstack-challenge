@@ -9,8 +9,9 @@ export class AuditLog {
   @Column()
   taskId: number;
 
-  @Column({ nullable: true })
-  userId?: number | null;     // nullable
+  @Column({ type: 'int', nullable: true })
+  userId: number | null;
+
 
   @Column({ type: 'text' })
   action: string; // e.g. 'update', 'assign', 'comment'

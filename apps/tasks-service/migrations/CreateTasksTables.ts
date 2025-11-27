@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateTasksTables1732399999999 implements MigrationInterface {
-    name = 'CreateTasksTables1732399999999'
+    name = 'CreateTasksTables1732399999999';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
 
-        // ENUMS
+        // ENUMS ---------------------------------------------------------
         await queryRunner.query(`
             CREATE TYPE "priority_enum" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
         `);
@@ -14,7 +14,7 @@ export class CreateTasksTables1732399999999 implements MigrationInterface {
             CREATE TYPE "status_enum" AS ENUM ('TODO', 'IN_PROGRESS', 'REVIEW', 'DONE');
         `);
 
-        // TASKS ------------------------------------------------------
+        // TASKS ---------------------------------------------------------
         await queryRunner.query(`
             CREATE TABLE "tasks" (
                 "id" SERIAL PRIMARY KEY,
@@ -28,18 +28,19 @@ export class CreateTasksTables1732399999999 implements MigrationInterface {
             );
         `);
 
-        // TASK USERS -------------------------------------------------
+        // TASK USERS (pivot) --------------------------------------------
         await queryRunner.query(`
             CREATE TABLE "task_users" (
                 "id" SERIAL PRIMARY KEY,
                 "taskId" INTEGER NOT NULL,
                 "userId" INTEGER NOT NULL,
-                CONSTRAINT "fk_task_users_task" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE,
-                CONSTRAINT "uq_task_users" UNIQUE ("taskId", "userId")
+                CONSTRAINT "uq_task_users_task_user" UNIQUE ("taskId", "userId"),
+                CONSTRAINT "fk_task_users_task" 
+                    FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE
             );
         `);
 
-        // COMMENTS ---------------------------------------------------
+        // COMMENTS ------------------------------------------------------
         await queryRunner.query(`
             CREATE TABLE "task_comments" (
                 "id" SERIAL PRIMARY KEY,
@@ -47,20 +48,22 @@ export class CreateTasksTables1732399999999 implements MigrationInterface {
                 "authorId" INTEGER NOT NULL,
                 "content" TEXT NOT NULL,
                 "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
-                CONSTRAINT "fk_task_comments_task" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE
+                CONSTRAINT "fk_task_comments_task" 
+                    FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE
             );
         `);
 
-        // AUDIT LOG --------------------------------------------------
+        // AUDIT LOG -----------------------------------------------------
         await queryRunner.query(`
             CREATE TABLE "task_audit_logs" (
                 "id" SERIAL PRIMARY KEY,
                 "taskId" INTEGER NOT NULL,
-                "userId" INTEGER NOT NULL,
+                "userId" INTEGER,
                 "action" TEXT NOT NULL,
                 "diff" TEXT,
                 "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
-                CONSTRAINT "fk_task_audit_logs_task" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE
+                CONSTRAINT "fk_task_audit_logs_task" 
+                    FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE
             );
         `);
     }
@@ -70,7 +73,6 @@ export class CreateTasksTables1732399999999 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "task_audit_logs"`);
         await queryRunner.query(`DROP TABLE "task_comments"`);
         await queryRunner.query(`DROP TABLE "task_users"`);
-
         await queryRunner.query(`DROP TABLE "tasks"`);
 
         await queryRunner.query(`DROP TYPE "status_enum"`);
