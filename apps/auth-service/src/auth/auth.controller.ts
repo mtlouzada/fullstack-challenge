@@ -24,4 +24,16 @@ export class AuthController {
 
     return this.authService.refreshTokens(data.refreshToken);
   }
+
+  @MessagePattern('auth.validate')
+  validateToken(data: { token: string }) {
+    try {
+      const payload = this.authService.validateToken(data.token);
+      return payload;
+    } catch (err) {
+      console.error('❌ Erro ao validar token:', err.message);
+      return null;
+    }
+  }
+
 }

@@ -63,4 +63,16 @@ export class AuthService {
     }
   }
 
+  validateToken(token: string) {
+    try {
+      return this.jwt.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
+    } catch (err) {
+      console.error('Token inválido:', err.message);
+      return null;
+    }
+  }
+
+
 }

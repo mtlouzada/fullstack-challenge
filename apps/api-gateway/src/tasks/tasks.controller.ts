@@ -17,7 +17,9 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { AddCommentDto } from './dto/add-comment.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PaginationDto } from './dto/pagination.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
