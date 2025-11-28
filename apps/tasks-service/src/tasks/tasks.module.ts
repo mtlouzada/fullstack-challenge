@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import { RpcTasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import { TasksHttpController } from './tasks.controller';
 
 import { Task } from '../entities/task.entity';
 import { Comment } from '../entities/comment.entity';
@@ -20,14 +20,16 @@ import { AuditLog } from '../entities/audit-log.entity';
         transport: Transport.TCP,
         options: {
           host: process.env.NOTIFICATIONS_HOST || 'notifications-service',
-          port: Number(process.env.NOTIFICATIONS_PORT) || 3005,
+          port: Number(process.env.NOTIFICATIONS_PORT) || 3002,
         },
       },
     ]),
   ],
 
-  controllers: [RpcTasksController],
+  controllers: [
+    TasksHttpController,
+  ],
+
   providers: [TasksService],
-  exports: [TasksService],
 })
 export class TasksModule {}
