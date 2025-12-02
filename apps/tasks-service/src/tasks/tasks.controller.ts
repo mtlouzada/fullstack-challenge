@@ -1,84 +1,48 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
-
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto } from '../dto/create-task.dto';
-import { UpdateTaskDto } from '../dto/update-task.dto';
-import { CreateCommentDto } from '../dto/create-comment.dto';
 
-@Controller('tasks')
-export class TasksHttpController {
+@Controller()
+export class RpcTasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  // LIST
-  @Get()
-  async findAll(
-    @Query('page') page = 1,
-    @Query('size') size = 10,
+  @MessagePattern('tasks.findAll')
+  findAll(@Payload() data: { page: number; size: number }) {
+    return this.tasksService.findAll(data);
+  }
+
+  @MessagePattern('tasks.findOne')
+  findOne(@Payload() data: { id: number }) {
+    return this.tasksService.findOne(data.id);
+  }
+
+  @MessagePattern('tasks.create')
+  create(@Payload() data: any) {
+    return this.tasksService.create(data);
+  }
+
+  @MessagePattern('tasks.update')
+  update(@Payload() data: { id: number; dto: any }) {
+    return this.tasksService.update(data.id, data.dto);
+  }
+
+  @MessagePattern('tasks.remove')
+  remove(@Payload() data: { id: number }) {
+    return this.tasksService.remove(data.id);
+  }
+
+  @MessagePattern('tasks.addComment')
+  addComment(@Payload() data: { taskId: number; dto: any }) {
+    return this.tasksService.addComment(data.taskId, data.dto);
+  }
+
+  @MessagePattern('tasks.listComments')
+  listComments(
+    @Payload() data: { taskId: number; page: number; size: number },
   ) {
-    return this.tasksService.findAll({
-      page: Number(page),
-      size: Number(size),
-    });
-  }
-
-  // FIND ONE
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(Number(id));
-  }
-
-  // CREATE
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateTaskDto) {
-    return this.tasksService.create(dto);
-  }
-
-  // UPDATE
-  @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateTaskDto,
-  ) {
-    return this.tasksService.update(Number(id), dto);
-  }
-
-  // DELETE
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.tasksService.remove(Number(id));
-  }
-
-  // ADD COMMENT
-  @Post(':id/comments')
-  async addComment(
-    @Param('id') id: string,
-    @Body() dto: CreateCommentDto,
-  ) {
-    return this.tasksService.addComment(Number(id), dto);
-  }
-
-  // LIST COMMENTS
-  @Get(':id/comments')
-  async listComments(
-    @Param('id') id: string,
-    @Query('page') page = 1,
-    @Query('size') size = 10
-  ) {
-    return this.tasksService.listComments(Number(id), {
-      page: Number(page),
-      size: Number(size),
+    return this.tasksService.listComments(data.taskId, {
+      page: data.page,
+      size: data.size,
     });
   }
 }

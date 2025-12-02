@@ -62,8 +62,6 @@ services:
     container_name: tasks-service
     env_file:
       - ./apps/tasks-service/.env
-    ports:
-      - "3002:3002"
     depends_on:
       postgres:
         condition: service_healthy

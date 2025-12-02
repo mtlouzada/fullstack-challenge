@@ -1,68 +1,58 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import axios from 'axios';
+import {
+  Injectable,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom, timeout } from 'rxjs';
+
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import { AddCommentDto } from './dto/add-comment.dto';
 
 @Injectable()
 export class TasksService {
-  private readonly TASKS_SERVICE_URL = 'http://localhost:3002/tasks'; 
-  // ajuste se sua porta do task-service for diferente
+  constructor(
+    @Inject('TASKS_SERVICE')
+    private readonly tasksClient: ClientProxy,
+  ) {}
 
-  async createTask(data: any) {
+  private async send<T = any, R = any>(pattern: string, data: T): Promise<R> {
     try {
-      const response = await axios.post(`${this.TASKS_SERVICE_URL}`, data);
-      return response.data;
-    } catch (error) {
-      throw new HttpException(
-        error.response?.data || 'Erro ao criar tarefa no task-service',
-        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const obs = this.tasksClient.send<R, T>(pattern, data);
+      return await firstValueFrom(obs.pipe(timeout({ each: 8000 })));
+    } catch (err) {
+      console.error('[TasksService] RMQ error', err);
+      throw new InternalServerErrorException('Tasks microservice error');
     }
   }
 
-  async findAll() {
-    try {
-      const response = await axios.get(`${this.TASKS_SERVICE_URL}`);
-      return response.data;
-    } catch (error) {
-      throw new HttpException(
-        error.response?.data || 'Erro ao buscar tarefas no task-service',
-        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  findAll(page: number, size: number) {
+    return this.send('tasks.findAll', { page, size });
   }
 
-  async findOne(id: number) {
-    try {
-      const response = await axios.get(`${this.TASKS_SERVICE_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new HttpException(
-        error.response?.data || 'Erro ao buscar tarefa no task-service',
-        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  create(dto: CreateTaskDto & { createdBy?: number }) {
+    // se quiser usar createdBy/authorId depois, você pode incluir no dto
+    return this.send('tasks.create', dto);
   }
 
-  async update(id: number, data: any) {
-    try {
-      const response = await axios.patch(`${this.TASKS_SERVICE_URL}/${id}`, data);
-      return response.data;
-    } catch (error) {
-      throw new HttpException(
-        error.response?.data || 'Erro ao atualizar tarefa no task-service',
-        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  findOne(id: number) {
+    return this.send('tasks.findOne', { id });
   }
 
-  async delete(id: number) {
-    try {
-      const response = await axios.delete(`${this.TASKS_SERVICE_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new HttpException(
-        error.response?.data || 'Erro ao deletar tarefa no task-service',
-        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  update(id: number, dto: UpdateTaskDto & { updatedBy?: number }) {
+    return this.send('tasks.update', { id, dto });
+  }
+
+  remove(id: number) {
+    return this.send('tasks.remove', { id });
+  }
+
+  addComment(taskId: number, dto: AddCommentDto & { authorId?: number }) {
+    return this.send('tasks.addComment', { taskId, dto });
+  }
+
+  listComments(taskId: number, page: number, size: number) {
+    return this.send('tasks.listComments', { taskId, page, size });
   }
 }

@@ -1,11 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: [process.env.RABBITMQ_URL ?? 'amqp://guest:guest@rabbitmq:5672'],
+        queue: 'tasks_queue',
+        queueOptions: { durable: true },
+      },
+    },
+  );
 
-  await app.listen(3002);
-  console.log('🚀 Tasks-service rodando em http://localhost:3002');
+  await app.listen();
+  console.log('📡 Tasks-service conectado ao RabbitMQ!');
 }
 
 bootstrap();
