@@ -12,5 +12,12 @@ until pg_isready -h "${DATABASE_HOST:-postgres}" -p "${DATABASE_PORT:-5432}" -U 
 done
 echo "✅ Postgres pronto"
 
+echo "➡️ Rodando migrations..."
+if npm run migration:run; then
+  echo "✅ Migrations aplicadas com sucesso"
+else
+  echo "⚠️ Falha ao aplicar migrations (ou já aplicadas). Continuando..."
+fi
+
 echo "🚀 Iniciando service..."
 exec "$@"
