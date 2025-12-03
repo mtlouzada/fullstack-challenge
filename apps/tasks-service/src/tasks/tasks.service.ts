@@ -40,14 +40,20 @@ export class TasksService {
   }
 
   //---------------------------------------------------------
-  // CREATE TASK (100% corrigido para docker/typeorm)
+  // CREATE TASK
   //---------------------------------------------------------
   async create(dto: CreateTaskDto): Promise<Task> {
     return await this.dataSource.transaction(async (manager) => {
+      // 🔥 Sanitização segura do dueDate
+      const parsedDate =
+        dto.dueDate && !isNaN(Date.parse(dto.dueDate))
+          ? new Date(dto.dueDate)
+          : undefined;
+
       const draft: DeepPartial<Task> = {
         title: dto.title,
         description: dto.description,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        dueDate: parsedDate,
         priority: dto.priority ?? Priority.MEDIUM,
         status: dto.status ?? Status.TODO,
       };
@@ -71,13 +77,13 @@ export class TasksService {
       const audit = manager.create(AuditLog, {
         taskId: saved.id,
         action: 'create',
-        userId: null,
+        userId: undefined,
         diff: `created task ${saved.title}`,
       });
 
       await manager.save(AuditLog, audit);
 
-      // Emit only after commit (Nest garante)
+      // Emit event to RMQ
       this.notificationsClient.emit('task.created', {
         taskId: saved.id,
         task: saved,
@@ -101,18 +107,26 @@ export class TasksService {
   }
 
   //---------------------------------------------------------
-  // UPDATE TASK
+  // UPDATE TASK (Corrigido dueDate)
   //---------------------------------------------------------
   async update(id: number, dto: UpdateTaskDto): Promise<Task> {
     const task = await this.findOne(id);
     const previous = { ...task };
+
+    // Corrigir dueDate se vier no DTO
+    if (dto.dueDate !== undefined) {
+      task.dueDate =
+        dto.dueDate && !isNaN(Date.parse(dto.dueDate))
+          ? new Date(dto.dueDate)
+          : undefined;
+    }
 
     Object.assign(task, dto);
     const saved = await this.tasksRepo.save(task);
 
     const audit = this.auditRepo.create({
       taskId: saved.id,
-      userId: null,
+      userId: undefined,
       action: 'update',
       diff: `prev: ${JSON.stringify(previous)} -> next: ${JSON.stringify(dto)}`,
     });
@@ -152,7 +166,7 @@ export class TasksService {
     const audit = this.auditRepo.create({
       taskId,
       action: 'comment',
-      userId: null,
+      userId: undefined,
       diff: dto.content,
     });
 

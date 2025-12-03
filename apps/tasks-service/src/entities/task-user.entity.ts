@@ -1,10 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique } from 'typeorm';
-import { Task } from './task.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('task_users')
-@Unique(['taskId', 'userId'])
+@Entity('task_user')
 export class TaskUser {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
@@ -13,6 +11,6 @@ export class TaskUser {
   @Column()
   userId: number;
 
-  @ManyToOne(() => Task, (t) => t.assignedUsers, { onDelete: 'CASCADE' })
-  task: Task;
+  @Column({ type: 'timestamp', default: () => 'now()' })
+  createdAt: Date;
 }
