@@ -1,27 +1,26 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { Task } from './task.entity';
 
-@Entity('task_audit_logs')
+@Entity('audit_log')
 export class AuditLog {
   @PrimaryGeneratedColumn('increment')
-  id?: number;                // opcional
+  id: number;
 
   @Column()
   taskId: number;
 
-  @Column({ type: 'int', nullable: true })
-  userId: number | null;
+  @ManyToOne(() => Task, (task) => task.auditLogs, { onDelete: 'CASCADE' })
+  task: Task;
 
-
-  @Column({ type: 'text' })
-  action: string; // e.g. 'update', 'assign', 'comment'
+  @Column()
+  action: string;
 
   @Column({ type: 'text', nullable: true })
-  diff?: string; // short description
+  diff?: string;
+
+  @Column({ nullable: true })
+  userId?: number;
 
   @CreateDateColumn()
-  createdAt?: Date;          // opcional
-
-  @ManyToOne(() => Task, (t) => t.auditLogs, { onDelete: 'CASCADE' })
-  task: Task;
+  createdAt: Date;
 }

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
+import { Task } from './task.entity';
 
 @Entity('task_user')
 export class TaskUser {
@@ -10,6 +11,9 @@ export class TaskUser {
 
   @Column()
   userId: number;
+
+  @ManyToOne(() => Task, (task) => task.assignedUsers, { onDelete: 'CASCADE' })
+  task: Task;
 
   @Column({ type: 'timestamp', default: () => 'now()' })
   createdAt: Date;
