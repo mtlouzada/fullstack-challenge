@@ -1,22 +1,19 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { Task } from './task.entity';
 
-@Entity('task_comments')
+@Entity('comments')
 export class Comment {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   taskId: number;
 
-  @Column()
-  authorId: number;
+  @ManyToOne(() => Task, (task) => task.comments, { onDelete: 'CASCADE' })
+  task: Task;
 
   @Column({ type: 'text' })
   content: string;
-
-  @ManyToOne(() => Task, (t) => t.comments, { onDelete: 'CASCADE' })
-  task: Task;
 
   @CreateDateColumn()
   createdAt: Date;
